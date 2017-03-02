@@ -6,6 +6,8 @@ import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -15,11 +17,17 @@ import java.util.List;
 /**
  * Created by panj on 2017/1/24.
  */
-
 public class CalendarView extends RelativeLayout {
     private RecyclerView mRecyclerView;
     private ViewHolderInterface mViewHolderInterface;
     private CalendarAdapter mAdapter;
+
+    private int mItemWidth = 80;
+    private int mViewWith = 0;
+    private float mDensity;
+    private int mCurrentPosition = 0;
+
+    private boolean mIsMoving = false;
 
     public CalendarView(Context context) {
         super(context);
@@ -50,6 +58,36 @@ public class CalendarView extends RelativeLayout {
         mAdapter = new CalendarAdapter();
         setAdapter(mAdapter);
         this.addView(mRecyclerView);
+
+        mDensity = context.getResources().getDisplayMetrics().density;
+        mViewWith = context.getResources().getDisplayMetrics().widthPixels;
+        mItemWidth = (int) (mItemWidth * mDensity);
+        mRecyclerView.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    mIsMoving = true;
+                }
+                return false;
+            }
+        });
+        mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (mIsMoving && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                    if (layoutManager instanceof LinearLayoutManager) {
+                        LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+                        int firstItemPosition = linearManager.findFirstVisibleItemPosition();
+                        Log.e("0525", "onScrollStateChanged SCROLL_STATE_IDLE firstItemPosition:" + firstItemPosition);
+                        mCurrentPosition = firstItemPosition;
+                        scrollToPosition(firstItemPosition);
+                    }
+                    mIsMoving = false;
+                }
+            }
+        });
     }
 
     private void setLayoutManager(RecyclerView.LayoutManager layout) {
@@ -79,6 +117,37 @@ public class CalendarView extends RelativeLayout {
 
     public void setViewHolderInterface(ViewHolderInterface viewHolderInterface) {
         mViewHolderInterface = viewHolderInterface;
+    }
+
+    public void scrollToPosition(int position) {
+        Log.e("0525", "scrollToPosition position:" + position);
+        if (mRecyclerView != null) {
+            scrollBy(getScrollX(position));
+        }
+    }
+
+    public void scrollBy(int x) {
+        if (mRecyclerView != null) {
+            mRecyclerView.smoothScrollBy(x, 0);
+        }
+    }
+
+    private int getScrollX(int position) {
+        Log.e("0525", "getScrollX position:" + position + "  mCurrentPosition:" + mCurrentPosition);
+        int x;
+        View child = mRecyclerView.getChildAt(0);
+        int childLeft = child.getLeft();
+        Log.e("0525", "childLeft:" + childLeft);
+        int offset = 0;
+        if (Math.abs(childLeft) > mItemWidth / 2) {
+            childLeft = mItemWidth + childLeft;
+            offset = 1;
+        }
+        Log.e("0525", "childLeft:" + childLeft);
+        x = (int) ((position - mCurrentPosition) * mItemWidth) + childLeft;
+        mCurrentPosition = position + offset;
+        Log.e("0525", "x:" + x);
+        return x;
     }
 
     class CalendarAdapter extends RecyclerView.Adapter<BaseViewHolder> {

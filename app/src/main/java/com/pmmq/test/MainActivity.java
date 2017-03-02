@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.pmmq.calendar.BaseViewHolder;
@@ -40,21 +41,31 @@ public class MainActivity extends AppCompatActivity implements ViewHolderInterfa
 
     public class CalendarViewHolder extends BaseViewHolder {
 
-        TextView mTextView;
+        public TextView txtDayNumber;
+        public TextView txtWeekName;
+        public TextView txtMonthName;
+        public RelativeLayout layoutBackground;
+        public View indicatorView;
+        public View rightBorderView;
 
         public CalendarViewHolder(View itemView) {
             super(itemView);
-            mTextView = (TextView) itemView.findViewById(R.id.text);
+            txtDayNumber = (TextView) itemView.findViewById(R.id.dayNumber);
+            txtWeekName = (TextView) itemView.findViewById(R.id.weekName);
+            txtMonthName = (TextView) itemView.findViewById(R.id.monthName);
+            layoutBackground = (RelativeLayout) itemView.findViewById(R.id.layoutBackground);
+            indicatorView = (View) itemView.findViewById(R.id.indicator_view);
+            rightBorderView = (View) itemView.findViewById(R.id.right_border_view);
         }
 
         @Override
         public void onBindViewHolder(Object object, int position) {
-            mTextView.setText(String.valueOf(object));
+            txtDayNumber.setText(String.valueOf(object));
         }
 
         @Override
         public void onItemClick(View view, int position) {
-
+            mCalendarView.scrollToPosition(position);
         }
     }
 }
