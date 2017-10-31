@@ -22,9 +22,6 @@ public class CalendarView extends RelativeLayout {
     private ViewHolderInterface mViewHolderInterface;
     private CalendarAdapter mAdapter;
 
-    private int mItemWidth = 80;
-    private int mViewWith = 0;
-    private float mDensity;
     private int mCurrentPosition = 0;
 
     private boolean mIsMoving = false;
@@ -55,13 +52,11 @@ public class CalendarView extends RelativeLayout {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mRecyclerView.setLayoutManager(linearLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
         mAdapter = new CalendarAdapter();
         setAdapter(mAdapter);
         this.addView(mRecyclerView);
 
-        mDensity = context.getResources().getDisplayMetrics().density;
-        mViewWith = context.getResources().getDisplayMetrics().widthPixels;
-        mItemWidth = (int) (mItemWidth * mDensity);
         mRecyclerView.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -137,14 +132,15 @@ public class CalendarView extends RelativeLayout {
         int x;
         View child = mRecyclerView.getChildAt(0);
         int childLeft = child.getLeft();
+        int width = child.getWidth();
         Log.e("0525", "childLeft:" + childLeft);
         int offset = 0;
-        if (Math.abs(childLeft) > mItemWidth / 2) {
-            childLeft = mItemWidth + childLeft;
+        if (Math.abs(childLeft) > width / 2) {
+            childLeft = width + childLeft;
             offset = 1;
         }
         Log.e("0525", "childLeft:" + childLeft);
-        x = (int) ((position - mCurrentPosition) * mItemWidth) + childLeft;
+        x = (int) ((position - mCurrentPosition) * width) + childLeft;
         mCurrentPosition = position + offset;
         Log.e("0525", "x:" + x);
         return x;
